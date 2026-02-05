@@ -1,0 +1,88 @@
+
+
+
+
+llm:
+  provider: "openai"  model: "gpt-4"  api_key_env: "OPENAI_API_KEY"  base_url: "https://api2.aigcbest.top/v1"
+  temperature: 0.1
+  max_tokens: 512
+  timeout_s: 60
+  max_retries: 3
+  backoff_s: 1.2
+
+
+runtime:
+  cache_dir: "data/cache"
+  log_dir: "logs"
+  seed: 42
+
+humaneval:
+  topology: "full"  n_programmers: 3
+controller:
+  learned_policy:
+    enable: true    state_path: logs/policy_humaneval.json
+    eps: 0.15    lr: 0.15    lam_cost: 0.001  gating: "moe"
+  threshold: 0.8  early_exit: true
+  max_layers: 4
+  cost_weight: 0.3  use_sbert: true
+pruning:
+  enable: true
+  strategy: "similarity"  warmup_rounds: 2
+  prune_ratio: 0.2
+  low_rank: true
+
+role_space:
+  diversity_reward: 0.3
+  adapter: "lora"
+  max_new_roles: 3
+  min_semantic_distance: 0.25
+  train_steps: 200
+  propose_temperature: 0.4
+
+feedback:
+  textual_gradient: true
+  channels: ["prompt", "temperature", "topology"]
+  temp_step: 0.1
+  temp_min: 0.0
+  temp_max: 1.0
+  reinforce_edge_on_success: true
+  weaken_edge_on_failure: true
+
+eval:
+  datasets: ["arith_grid"]
+  metrics: ["accuracy", "tokens", "calls"]
+  max_examples: 64
+
+architect:
+  g_designer:
+    max_nodes: 6
+    k_top: 2
+    sparsity: 0.5
+    use_vgae: false    vgae_hidden: 16
+    vgae_epochs: 80
+    vgae_lr: 0.01
+
+paths:
+  role_stats_path: logs/role_stats.json
+
+training:
+  steps: 200
+  prune_every: 5
+  save_every: 50
+  log_file: "train_self_evolve.jsonl"
+
+logging:
+  level: "INFO"
+  pretty: true
+
+embeddings:
+  sbert_path: "/home/zhaojiaxing/metagen-ai/models/all-MiniLM-L6-v2"  local_only: true
+role_gen:
+  enable: true  num_new: 2
+  diversity_weight: 0.3
+  diversity: true
+
+evolve:
+  enable: true
+mmlu:
+  helper_mode: "clone"  num_helpers: 1  max_helpers: 1
